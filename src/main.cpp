@@ -3,9 +3,9 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
-const char* WIFI_SSID = "Wifi_Undiknas 3D";
+const char* WIFI_SSID = "Redmi Note 9";
 const char* WIFI_PASS = "";
-const char* HOSTNAME = "IOTPAGIESP32";
+const char* HOSTNAME = "PRAKIOT";
 
 OneWire oneWire(4);
 DallasTemperature sensors(&oneWire);
