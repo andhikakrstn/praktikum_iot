@@ -4,13 +4,16 @@
 #include <DallasTemperature.h>
 #include <MQTT.h>
 
-const char* WIFI_SSID = "Redmi Note 9";
-const char* WIFI_PASS = "";
+const char* WIFI_SSID = "LATAVA5";
+const char* WIFI_PASS = "latava123";
 const char* HOSTNAME = "PRAKIOT";
+const char* IOTBROKER = "broker.hivemq.com";
 #define PIN_RELAY 32
 
 OneWire oneWire(4);
 DallasTemperature sensors(&oneWire);
+WiFiClient net;
+MQTTClient iot;
 
 float getAmbientTemperature()
 {
@@ -23,7 +26,9 @@ float getAmbientTemperature()
   if(tempC != DEVICE_DISCONNECTED_C) 
   {
     Serial.print("Temperature for the device 1 (index 0) is: ");
-    Serial.println(tempC);
+    Serial.print(tempC);
+    Serial.print(" C");
+
     return tempC;
   } 
   else
@@ -50,6 +55,23 @@ bool getRelay()
   return state;
 }
 
+void messageReceived(String &topic, String &payload)
+{
+  Serial.println("Incomming: " + topic + " - " + payload);
+
+  if(topic == "undiknas/ti/kelompok2/relay")
+  {
+    if(payload == "on")
+    {
+      setRelay(1);
+    }
+    else
+    {
+      setRelay(0);
+    }
+  }
+}
+
 void setup() {
   Serial.begin(115200);
   pinMode(PIN_RELAY,OUTPUT);
@@ -69,10 +91,48 @@ void setup() {
 
   sensors.begin();
 
+  iot.begin(IOTBROKER, net);
+  iot.onMessage(messageReceived);
+
+  Serial.print("Connecting to IoT Broker");
+  while(!iot.connect("Kelompok2", "public", "public")) 
+  {
+    Serial.print(".");
+    delay(1000);
+  }
+  Serial.println("");
+  Serial.println("IoT broker connected successfully.");
+
+  iot.subscribe("undiknas/ti/kelompok2/relay");
+  iot.subscribe("undiknas/ti/+/chatroom");
 }
+
+unsigned long intervalCounterRelay = 0;
+unsigned long intervalCounterSensor = 0;
 
 void loop() {
   // put your main code here, to run repeatedly:
+  
+  unsigned long now = millis();
+    
+  if( (now - intervalCounterRelay) > 1000)
+  {
+    intervalCounterRelay = now;
+
+    bool relayState = getRelay();
+    iot.publish("undiknas/ti/kelompok2/relay/state", String(relayState));
+  }
+
+  if( (now - intervalCounterSensor) > 5000)
+  {
+    intervalCounterSensor = now;
+
+    float suhu = getAmbientTemperature();
+    iot.publish("undiknas/ti/kelompok2/sensor/suhu", String(suhu));
+  }
+  
+  iot.loop();
+
   float suhu = getAmbientTemperature();
   delay(3000);
 }
