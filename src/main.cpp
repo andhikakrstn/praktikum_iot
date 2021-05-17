@@ -132,7 +132,5 @@ void loop() {
   }
   
   iot.loop();
-
-  float suhu = getAmbientTemperature();
   delay(3000);
 }
