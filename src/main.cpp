@@ -4,8 +4,8 @@
 #include <DallasTemperature.h>
 #include <MQTT.h>
 
-const char* WIFI_SSID = "LATAVA5";
-const char* WIFI_PASS = "latava123";
+const char* WIFI_SSID = "Bilalaland";
+const char* WIFI_PASS = "billameong";
 const char* HOSTNAME = "PRAKIOT";
 const char* IOTBROKER = "broker.hivemq.com";
 #define PIN_RELAY 32
@@ -132,7 +132,5 @@ void loop() {
   }
   
   iot.loop();
-
-  float suhu = getAmbientTemperature();
   delay(3000);
 }
